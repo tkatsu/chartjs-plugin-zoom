@@ -29,11 +29,11 @@ var header = "/*!\n\
  * https://github.com/chartjs/chartjs-plugin-zoom/blob/master/LICENSE.md\n\
  */\n";
 
-gulp.task('default', ['lint', 'build', 'watch']);
 gulp.task('build', buildTask);
 gulp.task('bump', bumpTask);
 gulp.task('lint', lintTask);
 gulp.task('watch', watchTask);
+gulp.task('default', gulp.series('lint', 'build', 'watch'), function(){ });
 
 function buildTask() {
   var nonBundled = browserify('./src/chart.zoom.js')
@@ -106,5 +106,5 @@ function lintTask() {
 }
 
 function watchTask() {
-  return gulp.watch(srcFiles, ['lint', 'build']);
+  return gulp.watch(srcFiles, gulp.series('lint', 'build'));
 }
