@@ -130,14 +130,12 @@ function zoomTimeScale(scale, zoom, center, zoomOptions) {
 		min_percent = (center.y - scale.top) / range;
 	}
 
-	var max_percent = 1 - min_percent;
-	var newDiff = range * (zoom - 1);
-
-	var minDelta = newDiff * min_percent;
-	var maxDelta = newDiff * max_percent;
-
-	var newMin = scale.getValueForPixel(scale.getPixelForValue(scale.min) + minDelta);
-	var newMax = scale.getValueForPixel(scale.getPixelForValue(scale.max) - maxDelta);
+	var newDiff = range * (zoom - 1);       // corresponds to chartDistance - dragDistance
+	var dragDistance = range - newDiff;
+	var startX = center.x - dragDistance / 2;
+	var endX = startX + dragDistance;
+	var newMin = scale.getValueForPixel(scale.getPixelForValue(scale.min) + startX - scale.left);
+	var newMax = scale.getValueForPixel(scale.getPixelForValue(scale.min) + endX - scale.left);
 
 	var diffMinMax = newMax.diff(newMin);
 	var minLimitExceeded = rangeMinLimiter(zoomOptions, diffMinMax) != diffMinMax;
@@ -209,6 +207,10 @@ function doZoom(chartInstance, zoom, center, whichAxes) {
 		});
 
 		chartInstance.update(0);
+
+		if (typeof zoomOptions.onZoom === 'function') {
+			zoomOptions.onZoom();
+		}
 	}
 }
 
@@ -283,6 +285,10 @@ function doPan(chartInstance, deltaX, deltaY) {
 		});
 
 		chartInstance.update(0);
+
+		if (typeof panOptions.onPan === 'function') {
+			panOptions.onPan();
+		}
 	}
 }
 
@@ -318,6 +324,8 @@ zoomNS.zoomCumulativeDelta = 0;
 
 // Chartjs Zoom Plugin
 var zoomPlugin = {
+	id: 'zoom',
+
 	afterInit: function(chartInstance) {
 		helpers.each(chartInstance.scales, function(scale) {
 			scale.originalOptions = helpers.clone(scale.options);
@@ -347,6 +355,7 @@ var zoomPlugin = {
 		};
 
 	},
+
 	beforeInit: function(chartInstance) {
 		chartInstance.zoom = {};
 
