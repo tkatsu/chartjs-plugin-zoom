@@ -187,6 +187,24 @@ function doZoom(chartInstance, zoom, center, whichAxes) {
 			if (scale.isHorizontal() && directionEnabled(zoomMode, 'x') && directionEnabled(_whichAxes, 'x')) {
 				zoomOptions.scaleAxes = "x";
 				zoomScale(scale, zoom, center, zoomOptions);
+				/*
+				 * Callback at zoom-end on horizontal axis when type is 'time'.
+				 * New start and end time are passed to a function defined in chartjs options.
+				 * Example for Rails:
+				 *  <%= line_chart ...,
+				 *        library: { zoom: { onZoomXWithTime: "onZoomEnd" }} %>
+				 *        ...
+				 *  <script type="text/javascript">
+				 *   function onZoomEnd(zoomStartTime, zoomEndTime) {
+				 *     console.log("zoom start: " + moment(zoomStartTime).format());
+				 *      ...
+				 *   }
+				 */
+				if (scale.options.type === 'time' &&
+						typeof zoomOptions.onZoomXWithTime === 'string') {
+					eval(zoomOptions.onZoomXWithTime +
+						"(scale.options.time.min, scale.options.time.max)");
+				}
 			} else if (!scale.isHorizontal() && directionEnabled(zoomMode, 'y') && directionEnabled(_whichAxes, 'y')) {
 				// Do Y zoom
 				zoomOptions.scaleAxes = "y";
